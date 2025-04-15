@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Dynamic SPA</title>
+    <style>
+      :root {
+        --primary-color: #4361ee;
+        --secondary-color: #3f37c9;
+        --accent-color: #4895ef;
+        --dark-color: #2b2d42;
+        --light-color: #f8f9fa;
+        --success-color: #4cc9f0;
+        --danger-color: #f72585;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", system-ui, -apple-system, sans-serif;
+      }
+
+      body {
+        background-color: var(--light-color);
+        color: var(--dark-color);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      /* Header Styles */
+      header {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        color: white;
+        padding: 1.5rem 0;
+        text-align: center;
+        box-shadow: var(--shadow);
+        position: relative;
+        z-index: 10;
+      }
+
+      /* Navigation */
+      nav {
+        display: flex;
+        justify-content: center;
+        background-color: white;
+        padding: 1rem;
+        box-shadow: var(--shadow);
+        position: sticky;
+        top: 0;
+        z-index: 5;
+      }
+
+      .nav-btn {
+        background: none;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        margin: 0 0.5rem;
+        cursor: pointer;
+        font-size: 1rem;
+        color: var(--dark-color);
+        transition: var(--transition);
+        border-radius: 50px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .nav-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--accent-color)
+        );
+        z-index: -1;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+      }
+
+      .nav-btn:hover,
+      .nav-btn.active {
+        color: white;
+      }
+
+      .nav-btn:hover::before,
+      .nav-btn.active::before {
+        transform: scaleX(1);
+      }
+
+      /* Main Content */
+      main {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        min-height: calc(100vh - 250px);
+      }
+
+      /* Content Sections */
+      .content-section {
+        background-color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.5s ease-out forwards;
+      }
+
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* User Cards */
+      .user-card {
+        border: 1px solid #eee;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--accent-color)
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.5rem;
+      }
+
+      .user-info {
+        flex: 1;
+      }
+
+      .user-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        border-color: var(--accent-color);
+      }
+
+      /* Form Styles */
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--dark-color);
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: var(--transition);
+        resize: none;
+      }
+
+      input:focus,
+      textarea:focus,
+      select:focus {
+        border-color: var(--accent-color);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.2);
+      }
+
+      .btn {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: var(--shadow);
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .btn-block {
+        display: block;
+        width: 100%;
+      }
+
+      /* Loading Spinner */
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-left-color: var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 2rem auto;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Toast Notifications */
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: var(--dark-color);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        transform: translateY(100px);
+        opacity: 0;
+        transition: var(--transition);
+        z-index: 100;
+      }
+
+      .toast.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .toast.success {
+        background-color: var(--success-color);
+      }
+
+      .toast.error {
+        background-color: var(--danger-color);
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        nav {
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+
+        .nav-btn {
+          margin: 0.25rem;
+          padding: 0.5rem 1rem;
+          font-size: 0.9rem;
+        }
+
+        .user-card {
+          flex-direction: column;
+          text-align: center;
+        }
+      }
+
+      /* Dark Mode Toggle */
+      .theme-toggle {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: var(--dark-color);
+        color: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+        z-index: 10;
+        transition: var(--transition);
+      }
+
+      .theme-toggle:hover {
+        transform: scale(1.1);
+      }
+
+      /* Dark Mode Styles */
+      body.dark-mode {
+        background-color: #121212;
+        color: #e0e0e0;
+      }
+
+      body.dark-mode header {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+      }
+
+      body.dark-mode nav {
+        background-color: #1e1e1e;
+      }
+
+      body.dark-mode .content-section,
+      body.dark-mode .user-card {
+        background-color: #1e1e1e;
+        border-color: #333;
+        color: #e0e0e0;
+      }
+
+      body.dark-mode input,
+      body.dark-mode textarea,
+      body.dark-mode select {
+        background-color: #2d2d2d;
+        border-color: #444;
+        color: #e0e0e0;
+      }
+
+      body.dark-mode label {
+        color: #e0e0e0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Advanced Dynamic SPA</h1>
+      <p>Interactive Single Page Application with Modern Features</p>
+    </header>
+
+    <nav>
+      <button class="nav-btn active" data-page="home">🏠 Home</button>
+      <button class="nav-btn" data-page="users">👥 Users</button>
+      <button class="nav-btn" data-page="products">🛍️ Products</button>
+      <button class="nav-btn" data-page="contact">📧 Contact</button>
+      <button class="nav-btn" data-page="settings">⚙️ Settings</button>
+    </nav>
+
+    <main id="main-content">
+      <!-- Content will be loaded dynamically here -->
+    </main>
+
+    <div class="theme-toggle" id="themeToggle">🌙</div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      // App State
+      const state = {
+        currentPage: "home",
+        users: [],
+        products: [],
+        darkMode: localStorage.getItem("darkMode") === "true",
+        settings: JSON.parse(localStorage.getItem("settings")) || {
+          notifications: true,
+          animations: true,
+        },
+      };
+
+      // DOM Elements
+      const mainContent = document.getElementById("main-content");
+      const navButtons = document.querySelectorAll(".nav-btn");
+      const themeToggle = document.getElementById("themeToggle");
+      const toastElement = document.getElementById("toast");
+
+      // Page Templates
+      const pages = {
+        home: `
+                <section class="content-section">
+                    <h2>Welcome to Our Advanced SPA</h2>
+                    <p>Experience the power of modern web development with this interactive single page application.</p>
+                    
+                    <div class="stats">
+                        <div class="stat-card">
+                            <h3>Dynamic Content</h3>
+                            <p>All content loads without page refreshes</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Real Data</h3>
+                            <p>Fetched from JSONPlaceholder API</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Interactive UI</h3>
+                            <p>With animations and feedback</p>
+                        </div>
+                    </div>
+                    
+                    <button id="demo-btn" class="btn">Try Demo Action</button>
+                </section>
+            `,
+        users: `
+                <section class="content-section">
+                    <div class="section-header">
+                        <h2>User Management</h2>
+                        <button id="refresh-users" class="btn">🔄 Refresh</button>
+                    </div>
+                    <div id="users-container">
+                        <div class="spinner"></div>
+                    </div>
+                </section>
+            `,
+        products: `
+                <section class="content-section">
+                    <h2>Product Catalog</h2>
+                    <div class="filter-controls">
+                        <select id="category-filter">
+                            <option value="all">All Categories</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="jewelery">Jewelery</option>
+                            <option value="men's clothing">Men's Clothing</option>
+                            <option value="women's clothing">Women's Clothing</option>
+                        </select>
+                        <input type="text" id="search-products" placeholder="Search products...">
+                    </div>
+                    <div id="products-container">
+                        <div class="spinner"></div>
+                    </div>
+                </section>
+            `,
+        contact: `
+                <section class="content-section">
+                    <h2>Contact Us</h2>
+                    <form id="contact-form">
+                        <div class="form-group">
+                            <label for="name">Your Name</label>
+                            <input type="text" id="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            <select id="subject" required>
+                                <option value="">Select a subject</option>
+                                <option value="support">Support</option>
+                                <option value="feedback">Feedback</option>
+                                <option value="partnership">Partnership</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Your Message</label>
+                            <textarea id="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-block">Send Message</button>
+                    </form>
+                </section>
+            `,
+        settings: `
+                <section class="content-section">
+                    <h2>Application Settings</h2>
+                    <form id="settings-form">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="dark-mode-toggle" ${
+                                  state.darkMode ? "checked" : ""
+                                }>
+                                Dark Mode
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="notifications-toggle" ${
+                                  state.settings.notifications ? "checked" : ""
+                                }>
+                                Enable Notifications
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="animations-toggle" ${
+                                  state.settings.animations ? "checked" : ""
+                                }>
+                                Enable Animations
+                            </label>
+                        </div>
+                        <button type="submit" class="btn">Save Settings</button>
+                    </form>
+                </section>
+            `,
+      };
+
+      // Initialize the app
+      function init() {
+        // Set initial theme
+        if (state.darkMode) {
+          document.body.classList.add("dark-mode");
+          themeToggle.textContent = "☀️";
+        }
+
+        renderPage("home");
+        setupEventListeners();
+      }
+
+      // Render the current page
+      function renderPage(page) {
+        state.currentPage = page;
+        mainContent.innerHTML = pages[page];
+
+        // Update active nav button
+        navButtons.forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.page === page);
+        });
+
+        // Load additional data if needed
+        if (page === "users") {
+          fetchUsers();
+        } else if (page === "products") {
+          fetchProducts();
+        }
+
+        // Setup page-specific event listeners
+        setupPageEvents(page);
+      }
+
+      // Setup page-specific event listeners
+      function setupPageEvents(page) {
+        switch (page) {
+          case "home":
+            document
+              .getElementById("demo-btn")
+              ?.addEventListener("click", showDemoToast);
+            break;
+          case "users":
+            document
+              .getElementById("refresh-users")
+              ?.addEventListener("click", fetchUsers);
+            break;
+          case "products":
+            document
+              .getElementById("category-filter")
+              ?.addEventListener("change", filterProducts);
+            document
+              .getElementById("search-products")
+              ?.addEventListener("input", searchProducts);
+            break;
+          case "contact":
+            setupContactForm();
+            break;
+          case "settings":
+            setupSettingsForm();
+            break;
+        }
+      }
+
+      // Fetch users from API
+      async function fetchUsers() {
+        const container = document.getElementById("users-container");
+        container.innerHTML = '<div class="spinner"></div>';
+
+        try {
+          const response = await fetch(
+            "https://jsonplaceholder.typicode.com/users"
+          );
+          state.users = await response.json();
+          renderUsers();
+          showToast("Users loaded successfully!", "success");
+        } catch (error) {
+          container.innerHTML = `
+                    <div style="color: var(--danger-color); padding: 1rem; text-align: center;">
+                        Error loading users: ${error.message}
+                    </div>
+                `;
+          showToast("Failed to load users", "error");
+        }
+      }
+
+      // Render user list
+      function renderUsers() {
+        const container = document.getElementById("users-container");
+        container.innerHTML = state.users
+          .map(
+            (user) => `
+                <div class="user-card">
+                    <div class="user-avatar">${user.name.charAt(0)}</div>
+                    <div class="user-info">
+                        <h3>${user.name}</h3>
+                        <p>📧 ${user.email}</p>
+                        <p>🏢 ${user.company.name}</p>
+                        <p>🌐 ${user.website}</p>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      // Fetch products from API
+      async function fetchProducts() {
+        const container = document.getElementById("products-container");
+        container.innerHTML = '<div class="spinner"></div>';
+
+        try {
+          const response = await fetch("https://fakestoreapi.com/products");
+          state.products = await response.json();
+          renderProducts();
+          showToast("Products loaded successfully!", "success");
+        } catch (error) {
+          container.innerHTML = `
+                    <div style="color: var(--danger-color); padding: 1rem; text-align: center;">
+                        Error loading products: ${error.message}
+                    </div>
+                `;
+          showToast("Failed to load products", "error");
+        }
+      }
+
+      // Render products
+      function renderProducts(products = state.products) {
+        const container = document.getElementById("products-container");
+        container.innerHTML = products
+          .map(
+            (product) => `
+                <div class="user-card">
+                    <img src="${product.image}" alt="${
+              product.title
+            }" width="80" style="border-radius: 8px;">
+                    <div class="user-info">
+                        <h3>${product.title}</h3>
+                        <p>$${product.price.toFixed(2)}</p>
+                        <p>⭐ ${product.rating.rate} (${
+              product.rating.count
+            } reviews)</p>
+                        <p>🏷️ ${product.category}</p>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      // Filter products by category
+      function filterProducts() {
+        const category = document.getElementById("category-filter").value;
+        const filtered =
+          category === "all"
+            ? state.products
+            : state.products.filter((p) => p.category === category);
+        renderProducts(filtered);
+      }
+
+      // Search products
+      function searchProducts() {
+        const searchTerm = document
+          .getElementById("search-products")
+          .value.toLowerCase();
+        const filtered = state.products.filter(
+          (p) =>
+            p.title.toLowerCase().includes(searchTerm) ||
+            p.description.toLowerCase().includes(searchTerm)
+        );
+        renderProducts(filtered);
+      }
+
+      // Setup contact form
+      function setupContactForm() {
+        const form = document.getElementById("contact-form");
+
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+
+          const formData = {
+            name: form.querySelector("#name").value,
+            email: form.querySelector("#email").value,
+            subject: form.querySelector("#subject").value,
+            message: form.querySelector("#message").value,
+            timestamp: new Date().toISOString(),
+          };
+
+          showToast("Message sent successfully!", "success");
+          form.reset();
+
+          // In a real app, you would send this to a server
+          console.log("Form submitted:", formData);
+        });
+      }
+
+      // Setup settings form
+      function setupSettingsForm() {
+        const form = document.getElementById("settings-form");
+
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+
+          state.darkMode = document.getElementById("dark-mode-toggle").checked;
+          state.settings.notifications = document.getElementById(
+            "notifications-toggle"
+          ).checked;
+          state.settings.animations =
+            document.getElementById("animations-toggle").checked;
+
+          // Save to localStorage
+          localStorage.setItem("darkMode", state.darkMode);
+          localStorage.setItem("settings", JSON.stringify(state.settings));
+
+          // Apply dark mode
+          document.body.classList.toggle("dark-mode", state.darkMode);
+          themeToggle.textContent = state.darkMode ? "☀️" : "🌙";
+
+          showToast("Settings saved!", "success");
+        });
+      }
+
+      // Show toast notification
+      function showToast(message, type = "") {
+        if (!state.settings.notifications) return;
+
+        toastElement.textContent = message;
+        toastElement.className = `toast ${type}`;
+        toastElement.classList.add("show");
+
+        setTimeout(() => {
+          toastElement.classList.remove("show");
+        }, 3000);
+      }
+
+      // Demo function
+      function showDemoToast() {
+        showToast("This is a demo notification!", "success");
+      }
+
+      // Setup theme toggle
+      function setupThemeToggle() {
+        themeToggle.addEventListener("click", () => {
+          state.darkMode = !state.darkMode;
+          document.body.classList.toggle("dark-mode", state.darkMode);
+          themeToggle.textContent = state.darkMode ? "☀️" : "🌙";
+          localStorage.setItem("darkMode", state.darkMode);
+        });
+      }
+
+      // Setup event listeners
+      function setupEventListeners() {
+        // Navigation
+        navButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            renderPage(button.dataset.page);
+            if (state.settings.animations) {
+              button.style.transform = "scale(0.95)";
+              setTimeout(() => {
+                button.style.transform = "";
+              }, 200);
+            }
+          });
+        });
+
+        // Theme toggle
+        setupThemeToggle();
+      }
+
+      // Start the app
+      document.addEventListener("DOMContentLoaded", init);
+    </script>
+  </body>
+</html>
