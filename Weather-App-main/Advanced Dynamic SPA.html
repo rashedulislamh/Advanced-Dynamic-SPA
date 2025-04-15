@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Dynamic SPA</title>
+    <link rel="stylesheet" href="Advanced Dynamic SPA.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Advanced Dynamic SPA</h1>
+      <p>Interactive Single Page Application with Modern Features</p>
+    </header>
+
+    <nav>
+      <button class="nav-btn active" data-page="home">🏠 Home</button>
+      <button class="nav-btn" data-page="users">👥 Users</button>
+      <button class="nav-btn" data-page="products">🛍️ Products</button>
+      <button class="nav-btn" data-page="contact">📧 Contact</button>
+      <button class="nav-btn" data-page="settings">⚙️ Settings</button>
+    </nav>
+
+    <main id="main-content">
+      <!-- Content will be loaded dynamically here -->
+    </main>
+
+    <div class="theme-toggle" id="themeToggle">🌙</div>
+
+    <div class="toast" id="toast"></div>
+    <script src="Advanced Dynamic SPA.js"></script>
+  </body>
+</html>
